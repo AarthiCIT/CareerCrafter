@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: careercrafter-mysql
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: Aarthi_0811
+      MYSQL_DATABASE: careercrafter_db
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-pAarthi_0811"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./ccbackend
+    container_name: careercrafter-backend
+    restart: on-failure
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://host.docker.internal:3306/careercrafter_db
+      DB_USERNAME: root
+      DB_PASSWORD: Aarthi_0811
+
+  frontend:
+    build: ./ccfrontend
+    container_name: careercrafter-frontend
+
+    depends_on:
+      - backend
+
+    ports:
+      - "3000:80"
+volumes:
+  mysql-data:
